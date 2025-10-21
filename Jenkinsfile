@@ -11,7 +11,7 @@ pipeline {
         TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')
         TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')
  
-        IMAGE_NAME = "vas1024/jenkins"
+        IMAGE_NAME = "ghcr.io/vas1024/jenkins"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         DOCKER_CREDS = "ghcr"
     }
@@ -26,7 +26,10 @@ pipeline {
         stage('Init') {
             steps {
                 echo "Starting pipeline for project: ${PROJECT_NAME}"
+                deleteDir()
             }
+    
+
         }
 
         stage('Get source') {
@@ -180,7 +183,7 @@ stage('HTML Report Debug') {
         stage('Docker build') {
             steps {
                 script {
-                    dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                 def  dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
         }
