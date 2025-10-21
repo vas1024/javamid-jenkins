@@ -79,7 +79,7 @@ pipeline {
             }
         }
 
-        stage('Уведомления') {
+        stage('Notifications') {
             steps {
                 script {
                     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
