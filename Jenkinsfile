@@ -94,21 +94,21 @@ stage('Tests') {
             }
         }
 
-        stage('HTML report') {
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    bat 'mvn jacoco:report'
-                    publishHTML(target: [
-                        reportDir: "${JACOCO_HTML}",
-                        reportFiles: 'index.html',
-                        reportName: 'Jacoco Code Coverage',
-                        keepAll: true,
-                        alwaysLinkToLastBuild: true,
-                        allowMissing: true
-                    ])
-                }
-            }
-        }
+//        stage('HTML report') {
+//            steps {
+//                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+//                    bat 'mvn jacoco:report'
+//                    publishHTML(target: [
+//                        reportDir: "${JACOCO_HTML}",
+//                        reportFiles: 'index.html',
+//                        reportName: 'Jacoco Code Coverage',
+//                        keepAll: true,
+//                        alwaysLinkToLastBuild: true,
+//                        allowMissing: true
+//                    ])
+//                }
+//            }
+//        }
 
 stage('Tests and Coverage') {
     steps {
@@ -190,7 +190,7 @@ stage('HTML Report Debug') {
                               bat """
                                   curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage ^
                                       --data-urlencode chat_id=%CHAT_ID% ^
-                                      --data-urlencode text="Build: ${env.JOB_NAME}/${env.BRANCH_NAME} #${env.BUILD_NUMBER}%%0AStatus: ${currentBuild.currentResult}%%0AURL: ${env.BUILD_URL}" ^
+                                      --data-urlencode text="Build: ${env.JOB_NAME}/${env.BRANCH_NAME}#${env.BUILD_NUMBER}    Status: ${currentBuild.currentResult}" ^
                                       --data-urlencode parse_mode=HTML
                               """                        
                         }
