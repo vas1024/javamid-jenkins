@@ -34,7 +34,8 @@ pipeline {
         stage('Build') {
             steps {
                
-                sh 'mvn clean compile package -DskipTests'
+//                sh 'mvn clean compile package -DskipTests'
+                 bat 'mvn clean compile package -DskipTests'
             }
         }
 
@@ -42,7 +43,8 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     
-                    sh 'mvn test'
+//                    sh 'mvn test'
+                    bat 'mvn test'
                 }
             }
             post {
