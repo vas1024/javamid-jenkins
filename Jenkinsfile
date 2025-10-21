@@ -7,7 +7,7 @@ pipeline {
         JACOCO_HTML = 'build/reports/jacoco/test/html'
         EMAIL_RECIPIENTS = 'team_email@yandex.ru' // нужно заменить на валидный email
         EMAIL_FROM = 'your_email@yandex.ru' // нужно заменить на валидный email
-        EMAIL_SUBJECT = 'Результат сборки Jenkins'
+        EMAIL_SUBJECT = 'Jenkins build result'
         TELEGRAM_CHAT_ID = credentials('-4834224227')
         TELEGRAM_TOKEN = credentials('7328854811:AAFYII_NhVkjhMePR66vz9FmFaulL66Vb2I')
     }
@@ -19,26 +19,26 @@ pipeline {
     }
 
     stages {
-        stage('Инициализация') {
+        stage('Init') {
             steps {
-                echo "Запуск пайплайна для проекта: ${PROJECT_NAME}"
+                echo "Starting pipeline for project: ${PROJECT_NAME}"
             }
         }
 
-        stage('Получение исходников') {
+        stage('Get source') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Сборка проекта') {
+        stage('Build') {
             steps {
                
                 sh 'mvn clean compile package -DskipTests'
             }
         }
 
-        stage('Запуск тестов') {
+        stage('Tests') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     
@@ -52,17 +52,17 @@ pipeline {
             }
         }
 
-        stage('Генерация метрик') {
+        stage('Metrics gen') {
             steps {
-                echo "Ключевые метрики сборки:"
-                echo "- Длительность: ${currentBuild.durationString}"
-                echo "- Автор: ${env.BUILD_USER ?: 'N/A'}"
-                echo "- Статус: ${currentBuild.currentResult}"
-                echo "- Коммит: ${env.GIT_COMMIT ?: 'N/A'}"
+                echo "key metrics:"
+                echo "- Duration: ${currentBuild.durationString}"
+                echo "- Author: ${env.BUILD_USER ?: 'N/A'}"
+                echo "- Statis: ${currentBuild.currentResult}"
+                echo "- Commit: ${env.GIT_COMMIT ?: 'N/A'}"
             }
         }
 
-        stage('Отчёт в HTML') {
+        stage('HTML report') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     publishHTML(target: [
@@ -109,10 +109,10 @@ pipeline {
 
     post {
         success {
-            echo "Сборка завершена успешно."
+            echo "Success"
         }
         failure {
-            echo "Сборка завершилась с ошибкой."
+            echo "Fail"
         }
     }
 }
