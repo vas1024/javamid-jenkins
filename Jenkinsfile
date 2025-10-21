@@ -110,6 +110,35 @@ stage('Tests') {
             }
         }
 
+stage('HTML report 2') {
+    steps {
+        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+            bat '''
+                echo Generating JaCoCo report...
+                mvn jacoco:report
+                
+                echo Checking HTML report location...
+                if exist target\\site\\jacoco (
+                    echo Jacoco HTML report generated
+                    dir target\\site\\jacoco /B
+                ) else (
+                    echo ERROR: Jacoco report not generated!
+                    echo Available in target/site:
+                    dir target\\site /B 2>nul || echo No site directory
+                )
+            '''
+            
+            publishHTML(target: [
+                reportDir: 'target/site/jacoco',
+                reportFiles: 'index.html',
+                reportName: 'JaCoCo Code Coverage',
+                keepAll: true,
+                alwaysLinkToLastBuild: true
+            ])
+        }
+    }
+}
+
         stage('Notifications') {
             steps {
                 script {
@@ -125,7 +154,7 @@ stage('Tests') {
                         bat """
                             curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage ^
                                 --data-urlencode chat_id=%CHAT_ID% ^
-                                --data-urlencode text=Сборка: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}\nСтатус: ${BUILD_STATUS}\nСсылка: ${BUILD_URL}" ^
+                                --data-urlencode text="Сборка: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}\nСтатус: ${BUILD_STATUS}\n" ^
                                 -d parse_mode=HTML
                         """
                         }
