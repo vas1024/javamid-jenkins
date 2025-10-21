@@ -8,8 +8,8 @@ pipeline {
         EMAIL_RECIPIENTS = 'team_email@yandex.ru' // нужно заменить на валидный email
         EMAIL_FROM = 'your_email@yandex.ru' // нужно заменить на валидный email
         EMAIL_SUBJECT = 'Jenkins build result'
-        TELEGRAM_CHAT_ID = credentials('-4834224227')
-        TELEGRAM_TOKEN = credentials('7328854811:AAFYII_NhVkjhMePR66vz9FmFaulL66Vb2I')
+        TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')
+        TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')
     }
 
     options {
