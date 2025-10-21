@@ -110,34 +110,29 @@ stage('Tests') {
             }
         }
 
-stage('HTML report 2') {
+stage('Tests and Coverage') {
     steps {
-        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-            bat '''
-                echo Generating JaCoCo report...
-                mvn jacoco:report
-                
-                echo Checking HTML report location...
-                if exist target\\site\\jacoco (
-                    echo Jacoco HTML report generated
-                    dir target\\site\\jacoco /B
-                ) else (
-                    echo ERROR: Jacoco report not generated!
-                    echo Available in target/site:
-                    dir target\\site /B 2>nul || echo No site directory
-                )
-            '''
+        bat '''
+            echo Step 1: Clean previous build...
+            mvn clean
             
-            publishHTML(target: [
-                reportDir: 'target/site/jacoco',
-                reportFiles: 'index.html',
-                reportName: 'JaCoCo Code Coverage',
-                keepAll: true,
-                alwaysLinkToLastBuild: true
-            ])
-        }
+            echo Step 2: Run tests with coverage data collection...
+            mvn test jacoco:prepare-agent test
+            
+            echo Step 3: Generate HTML report...
+            mvn jacoco:report
+            
+            echo Step 4: Verify reports were generated...
+            if exist target\\site\\jacoco\\index.html (
+                echo SUCCESS: JaCoCo HTML report created!
+            ) else (
+                echo ERROR: Still no JaCoCo report!
+                dir target /S | findstr ".exec" || echo No jacoco.exec file found
+            )
+        '''
     }
 }
+
 
 stage('HTML Report Debug') {
     steps {
@@ -176,7 +171,7 @@ stage('HTML Report Debug') {
                         bat """
                             curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage ^
                                 --data-urlencode chat_id=%CHAT_ID% ^
-                                --data-urlencode text="Сборка: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}\nСтатус: ${env.BUILD_STATUS}\n" ^
+                                --data-urlencode text="Build: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}%%0AStatus: ${currentBuild.currentResult}\n" ^
                                 -d parse_mode=HTML
                         """
                         }
