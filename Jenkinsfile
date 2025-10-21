@@ -139,6 +139,28 @@ stage('HTML report 2') {
     }
 }
 
+stage('HTML Report Debug') {
+    steps {
+        bat '''
+            echo === CHECKING JACOCO GENERATION ===
+            mvn jacoco:report
+            
+            echo === CHECKING WHAT WAS GENERATED ===
+            dir target /S | findstr ".html" || echo No HTML files found!
+            
+            if exist target\\site (
+                echo Contents of target/site:
+                dir target\\site /S /B
+            ) else (
+                echo ERROR: target/site directory does not exist!
+            )
+            
+            echo === CHECKING POM CONFIGURATION ===
+            mvn help:effective-pom | findstr "jacoco" || echo No jacoco configuration found!
+        '''
+    }
+}
+
         stage('Notifications') {
             steps {
                 script {
@@ -154,7 +176,7 @@ stage('HTML report 2') {
                         bat """
                             curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage ^
                                 --data-urlencode chat_id=%CHAT_ID% ^
-                                --data-urlencode text="Сборка: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}\nСтатус: ${BUILD_STATUS}\n" ^
+                                --data-urlencode text="Сборка: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}\nСтатус: ${env.BUILD_STATUS}\n" ^
                                 -d parse_mode=HTML
                         """
                         }
