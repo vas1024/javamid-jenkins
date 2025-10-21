@@ -114,12 +114,12 @@ stage('Tests and Coverage') {
     steps {
         bat '''
             echo Step 1: Clean previous build...
-            mvn clean
+            echo skiping.. mvn clean
             
-            echo Step 2: Run tests with coverage data collection...
+            echo Step 2: Run tests WITH JaCoCo agent to collect coverage data...
             mvn test jacoco:prepare-agent test
             
-            echo Step 3: Generate HTML report...
+            echo Step 3: Generate HTML report from collected data...
             mvn jacoco:report
             
             echo Step 4: Verify reports were generated...
@@ -127,12 +127,31 @@ stage('Tests and Coverage') {
                 echo SUCCESS: JaCoCo HTML report created!
             ) else (
                 echo ERROR: Still no JaCoCo report!
-                dir target /S | findstr ".exec" || echo No jacoco.exec file found
+                echo Checking what files exist:
+                dir target /S | findstr ".exec .xml .html" || echo No relevant files found
             )
         '''
     }
+    post {
+        always {
+            junit "target/surefire-reports/*.xml"
+            
+            script {
+                if (fileExists('target/site/jacoco/index.html')) {
+                    publishHTML(target: [
+                        reportDir: 'target/site/jacoco',
+                        reportFiles: 'index.html', 
+                        reportName: 'JaCoCo Code Coverage',
+                        keepAll: true
+                    ])
+                    echo "JaCoCo HTML report published"
+                } else {
+                    echo "JaCoCo HTML report not available"
+                }
+            }
+        }
+    }
 }
-
 
 stage('HTML Report Debug') {
     steps {
@@ -168,12 +187,12 @@ stage('HTML Report Debug') {
 //                                    -d parse_mode=HTML
 //                            '''
                         
-                        bat """
-                            curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage ^
-                                --data-urlencode chat_id=%CHAT_ID% ^
-                                --data-urlencode text="Build: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}%%0AStatus: ${currentBuild.currentResult}\n" ^
-                                -d parse_mode=HTML
-                        """
+                              bat """
+                                  curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage ^
+                                      --data-urlencode chat_id=%CHAT_ID% ^
+                                      --data-urlencode text="Build: ${env.JOB_NAME}/${env.BRANCH_NAME} #${env.BUILD_NUMBER}%%0AStatus: ${currentBuild.currentResult}%%0AURL: ${env.BUILD_URL}" ^
+                                      --data-urlencode parse_mode=HTML
+                              """                        
                         }
                     }
                 }
