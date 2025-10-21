@@ -113,12 +113,7 @@ stage('Tests') {
 stage('Tests and Coverage') {
     steps {
         bat '''
-            echo Step 1: Clean previous build...
-            echo mvn clean
-            
-            echo Step 2: Run tests WITH JaCoCo agent to collect coverage data...
-            mvn test jacoco:prepare-agent test
-            
+           
             echo Step 3: Generate HTML report from collected data...
             mvn jacoco:report
             
