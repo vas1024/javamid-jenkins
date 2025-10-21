@@ -4,7 +4,7 @@ pipeline {
     environment {
         PROJECT_NAME = 'jenkins-example'
         REPORT_DIR = 'build/test-results/test'
-        JACOCO_HTML = 'build/reports/jacoco/test/html'
+        JACOCO_HTML = 'target/site/jacoco'
         EMAIL_RECIPIENTS = 'team_email@yandex.ru' // нужно заменить на валидный email
         EMAIL_FROM = 'your_email@yandex.ru' // нужно заменить на валидный email
         EMAIL_SUBJECT = 'Jenkins build result'
@@ -97,6 +97,7 @@ stage('Tests') {
         stage('HTML report') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    bat 'mvn jacoco:report'
                     publishHTML(target: [
                         reportDir: "${JACOCO_HTML}",
                         reportFiles: 'index.html',
@@ -124,7 +125,7 @@ stage('Tests') {
                         bat """
                             curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage ^
                                 --data-urlencode chat_id=%CHAT_ID% ^
-                                --data-urlencode text="Сборка: ${env.JOB_NAME} #${env.BUILD_NUMBER}^&echo; Статус: ${currentBuild.currentResult}^&echo; Ветка: ${env.BRANCH_NAME}^&echo; Ссылка: ${env.BUILD_URL}" ^
+                                --data-urlencode text=Сборка: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}\nСтатус: ${BUILD_STATUS}\nСсылка: ${BUILD_URL}" ^
                                 -d parse_mode=HTML
                         """
                         }
