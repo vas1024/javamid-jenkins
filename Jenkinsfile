@@ -10,6 +10,10 @@ pipeline {
         EMAIL_SUBJECT = 'Jenkins build result'
         TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')
         TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')
+ 
+        IMAGE_NAME = "vas1024/jenkins"
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        DOCKER_CREDS = "ghcr"
     }
 
     options {
@@ -169,6 +173,31 @@ stage('HTML Report Debug') {
         '''
     }
 }
+
+
+
+
+        stage('Docker build') {
+            steps {
+                script {
+                    dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                }
+            }
+        }
+
+        stage('push image') {
+            steps {
+                script {
+                    docker.withRegistry('https://ghcr.io', DOCKER_CREDS) {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+    
+
+
+
 
         stage('Notifications') {
             steps {
