@@ -39,20 +39,50 @@ pipeline {
             }
         }
 
-        stage('Tests') {
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    
-//                    sh 'mvn test'
-                    bat 'mvn test'
-                }
-            }
-            post {
-                always {
-                    junit "${REPORT_DIR}/*.xml"
-                }
-            }
+
+//        stage('Tests') {
+//            steps {
+//                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+//                    
+//   //                    sh 'mvn test'
+//                    bat 'mvn test'
+//                }
+//            }
+//            post {
+//                always {
+//                    junit "${REPORT_DIR}/*.xml"
+//                }
+//            }
+//        }
+
+stage('Tests') {
+    steps {
+        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+            bat '''
+                echo Running tests...
+                mvn test
+                echo Maven test execution finished
+            '''
         }
+    }
+    post {
+        always {
+            bat '''
+                echo Checking test reports...
+                dir target /S | findstr ".xml" || echo No XML files found!
+                if exist target\\surefire-reports (
+                    echo Surefire reports directory exists
+                    dir target\\surefire-reports /B
+                ) else (
+                    echo ERROR: surefire-reports directory not found!
+                )
+            '''
+            junit "target/surefire-reports/*.xml"
+        }
+    }
+}
+
+
 
         stage('Metrics gen') {
             steps {
