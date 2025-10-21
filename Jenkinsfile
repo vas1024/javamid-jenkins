@@ -113,25 +113,20 @@ stage('Tests') {
             steps {
                 script {
                     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-//                        emailext(
-//                            subject: "${EMAIL_SUBJECT}",
-//                            body: """<p>Статус: ${currentBuild.currentResult}</p>
-//                                     <p>Ссылка на билд: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>""",
-//                            recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-//                            to: "${EMAIL_RECIPIENTS}",
-//                            from: "${EMAIL_FROM}",
-//                            mimeType: 'text/html'
-//                        )
-                    }
-
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                         withEnv(["CHAT_ID=${TELEGRAM_CHAT_ID}", "TOKEN=${TELEGRAM_TOKEN}"]) {
-                            sh '''
-                                curl -s -X POST https://api.telegram.org/bot$TOKEN/sendMessage \
-                                    --data-urlencode chat_id=$CHAT_ID \
-                                    --data-urlencode text="Сборка: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}\nСтатус: ${BUILD_STATUS}\nСсылка: ${BUILD_URL}" \
-                                    -d parse_mode=HTML
-                            '''
+//                            sh '''
+//                                curl -s -X POST https://api.telegram.org/bot$TOKEN/sendMessage \
+//                                    --data-urlencode chat_id=$CHAT_ID \
+//                                    --data-urlencode text="Сборка: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}\nСтатус: ${BUILD_STATUS}\nСсылка: ${BUILD_URL}" \
+//                                    -d parse_mode=HTML
+//                            '''
+                        
+                        bat """
+                            curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage ^
+                                --data-urlencode chat_id=%CHAT_ID% ^
+                                --data-urlencode text="Сборка: ${env.JOB_NAME} #${env.BUILD_NUMBER}^&echo; Статус: ${currentBuild.currentResult}^&echo; Ветка: ${env.BRANCH_NAME}^&echo; Ссылка: ${env.BUILD_URL}" ^
+                                -d parse_mode=HTML
+                        """
                         }
                     }
                 }
