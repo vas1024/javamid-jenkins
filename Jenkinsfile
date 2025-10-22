@@ -107,7 +107,7 @@ pipeline {
         stage('push image') {
             steps {
                 script {
-                    docker.withRegistry('https://ghcr.io', 'ghcr') {
+                    docker.withRegistry('https://ghcr.io', 'ghcr_username_password') {
                         dockerImage.push()
                     }
                 }
