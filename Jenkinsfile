@@ -64,32 +64,6 @@ pipeline {
 //            }
 //        }
 
-stage('Tests') {
-    steps {
-        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-            sh '''
-                echo Running tests...
-                mvn test
-                echo Maven test execution finished
-            '''
-        }
-    }
-    post {
-        always {
-            sh '''
-                echo Checking test reports...
-                dir target /S | findstr ".xml" || echo No XML files found!
-                if exist target\\surefire-reports (
-                    echo Surefire reports directory exists
-                    dir target\\surefire-reports /B
-                ) else (
-                    echo ERROR: surefire-reports directory not found!
-                )
-            '''
-            junit "target/surefire-reports/*.xml"
-        }
-    }
-}
 
 
 
@@ -119,21 +93,12 @@ stage('Tests') {
 //            }
 //        }
 
+
 stage('Tests and Coverage') {
     steps {
         sh '''
-           
             echo Step 3: Generate HTML report from collected data...
             mvn jacoco:report
-            
-            echo Step 4: Verify reports were generated...
-            if exist target\\site\\jacoco\\index.html (
-                echo SUCCESS: JaCoCo HTML report created!
-            ) else (
-                echo ERROR: Still no JaCoCo report!
-                echo Checking what files exist:
-                dir target /S | findstr ".exec .xml .html" || echo No relevant files found
-            )
         '''
     }
     post {
