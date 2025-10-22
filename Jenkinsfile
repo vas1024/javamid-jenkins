@@ -94,35 +94,6 @@ pipeline {
 //        }
 
 
-stage('Tests and Coverage') {
-    steps {
-        sh '''
-            echo Step 3: Generate HTML report from collected data...
-            mvn jacoco:report
-        '''
-    }
-    post {
-        always {
-            junit "target/surefire-reports/*.xml"
-            
-            script {
-                if (fileExists('target/site/jacoco/index.html')) {
-                    publishHTML(target: [
-                        reportDir: 'target/site/jacoco',
-                        reportFiles: 'index.html', 
-                        reportName: 'JaCoCo Code Coverage',
-                        keepAll: true
-                    ])
-                    echo "JaCoCo HTML report published"
-                } else {
-                    echo "JaCoCo HTML report not available"
-                }
-            }
-        }
-    }
-}
-
-
 
 
         stage('Docker build') {
