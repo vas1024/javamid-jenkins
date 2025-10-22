@@ -33,21 +33,6 @@ pipeline {
         }
 
 
-stage('Debug Docker') {
-    steps {
-        bat '''
-            echo "=== Docker Contexts ==="
-            docker context ls
-            
-            echo "=== Current Context ==="
-            docker context show
-            
-            echo "=== Docker Info ==="
-            docker info
-        '''
-    }
-}
-
         stage('Get source') {
             steps {
                 checkout scm
@@ -57,8 +42,8 @@ stage('Debug Docker') {
         stage('Build') {
             steps {
                
-//                sh 'mvn clean compile package -DskipTests'
-                 bat 'mvn clean compile package -DskipTests'
+                sh 'mvn clean compile package -DskipTests'
+//                bat 'mvn clean compile package -DskipTests'
             }
         }
 
@@ -81,7 +66,7 @@ stage('Debug Docker') {
 stage('Tests') {
     steps {
         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-            bat '''
+            sh '''
                 echo Running tests...
                 mvn test
                 echo Maven test execution finished
@@ -90,7 +75,7 @@ stage('Tests') {
     }
     post {
         always {
-            bat '''
+            sh '''
                 echo Checking test reports...
                 dir target /S | findstr ".xml" || echo No XML files found!
                 if exist target\\surefire-reports (
@@ -135,7 +120,7 @@ stage('Tests') {
 
 stage('Tests and Coverage') {
     steps {
-        bat '''
+        sh '''
            
             echo Step 3: Generate HTML report from collected data...
             mvn jacoco:report
@@ -171,28 +156,6 @@ stage('Tests and Coverage') {
     }
 }
 
-stage('HTML Report Debug') {
-    steps {
-        bat '''
-            echo === CHECKING JACOCO GENERATION ===
-            mvn jacoco:report
-            
-            echo === CHECKING WHAT WAS GENERATED ===
-            dir target /S | findstr ".html" || echo No HTML files found!
-            
-            if exist target\\site (
-                echo Contents of target/site:
-                dir target\\site /S /B
-            ) else (
-                echo ERROR: target/site directory does not exist!
-            )
-            
-            echo === CHECKING POM CONFIGURATION ===
-            mvn help:effective-pom | findstr "jacoco" || echo No jacoco configuration found!
-        '''
-    }
-}
-
 
 
 
@@ -204,36 +167,36 @@ stage('HTML Report Debug') {
             }
         }
 
-//        stage('push image') {
-//            steps {
-//                script {
-//                    docker.withRegistry('https://ghcr.io', 'ghcr') {
-//                        dockerImage.push()
-//                    }
-//                }
-//            }
-//        }
-
-
-
-stage('Push to GHCR') {
-    steps {
-        script {
-            withCredentials([usernamePassword(
-                credentialsId: 'ghcr',  
-                usernameVariable: 'GHCR_USER',
-                passwordVariable: 'GHCR_TOKEN'
-            )]) {
-                bat """
-                    echo %GHCR_TOKEN% | docker login ghcr.io -u %GHCR_USER% --password-stdin
-                    docker push ghcr.io/vas1024/jenkins:${env.BUILD_NUMBER}
-                    docker push ghcr.io/vas1024/jenkins:latest
-                    docker logout ghcr.io
-                """
+        stage('push image') {
+            steps {
+                script {
+                    docker.withRegistry('https://ghcr.io', 'ghcr') {
+                        dockerImage.push()
+                    }
+                }
             }
         }
-    }
-}
+
+
+
+//stage('Push to GHCR') {
+//    steps {
+//        script {
+//            withCredentials([usernamePassword(
+//                credentialsId: 'ghcr',  
+//                usernameVariable: 'GHCR_USER',
+//                passwordVariable: 'GHCR_TOKEN'
+//            )]) {
+//                bat """
+//                    echo %GHCR_TOKEN% | docker login ghcr.io -u %GHCR_USER% --password-stdin
+//                    docker push ghcr.io/vas1024/jenkins:${env.BUILD_NUMBER}
+//                    docker push ghcr.io/vas1024/jenkins:latest
+//                    docker logout ghcr.io
+//                """
+//            }
+//        }
+//    }
+//}
 
 
 
@@ -252,10 +215,10 @@ stage('Push to GHCR') {
 //                                    -d parse_mode=HTML
 //                            '''
                         
-                              bat """
-                                  curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage ^
-                                      --data-urlencode chat_id=%CHAT_ID% ^
-                                      --data-urlencode text="Build: ${env.JOB_NAME}/${env.BRANCH_NAME}#${env.BUILD_NUMBER}    Status: ${currentBuild.currentResult}" ^
+                              sh """
+                                  curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage \
+                                      --data-urlencode chat_id=%CHAT_ID% \
+                                      --data-urlencode text="Build: ${env.JOB_NAME}/${env.BRANCH_NAME}#${env.BUILD_NUMBER}    Status: ${currentBuild.currentResult}" \
                                       --data-urlencode parse_mode=HTML
                               """                        
                         }
