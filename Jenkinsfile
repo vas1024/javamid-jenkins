@@ -8,8 +8,8 @@ pipeline {
         EMAIL_RECIPIENTS = 'team_email@yandex.ru' // нужно заменить на валидный email
         EMAIL_FROM = 'your_email@yandex.ru' // нужно заменить на валидный email
         EMAIL_SUBJECT = 'Jenkins build result'
-        TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')
-        TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')
+        TELEGRAM_CHAT_ID = credentials('telegram_chat_id')
+        TELEGRAM_TOKEN = credentials('telegram_token')
  
         IMAGE_NAME = "ghcr.io/vas1024/jenkins"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
@@ -216,26 +216,26 @@ stage('HTML Report Debug') {
 
 
 
-
-stage('GHCR Push') {
+stage('Push to GHCR') {
     steps {
-        withCredentials([string(credentialsId: 'ghcr', variable: 'GHCR_TOKEN')]) {
-            bat """
-                # Простой логин и пуш
-                echo %GHCR_TOKEN% | docker login ghcr.io -u vas1024 --password-stdin && (
+        script {
+            withCredentials([usernamePassword(
+                credentialsId: 'ghcr',  
+                usernameVariable: 'GHCR_USER',
+                passwordVariable: 'GHCR_TOKEN'
+            )]) {
+                bat """
+                    echo %GHCR_TOKEN% | docker login ghcr.io -u %GHCR_USER% --password-stdin
                     docker push ghcr.io/vas1024/jenkins:${env.BUILD_NUMBER}
                     docker push ghcr.io/vas1024/jenkins:latest
                     docker logout ghcr.io
-                    echo SUCCESS
-                ) || (
-                    echo FAILED to login
-                    exit 1
-                )
-            """
+                """
+            }
         }
     }
 }
-    
+
+
 
 
 
