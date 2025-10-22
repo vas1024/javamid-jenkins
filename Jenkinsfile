@@ -41,7 +41,7 @@ pipeline {
 
         stage('Build') {
             steps {
-               
+                sh 'mvn --version'
                 sh 'mvn clean compile package -DskipTests'
 //                bat 'mvn clean compile package -DskipTests'
             }
