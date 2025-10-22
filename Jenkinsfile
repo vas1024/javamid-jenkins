@@ -1,3 +1,4 @@
+def dockerImage
 pipeline {
     agent any
 
@@ -99,7 +100,7 @@ pipeline {
         stage('Docker build') {
             steps {
                 script {
-                 def  dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                    dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
         }
