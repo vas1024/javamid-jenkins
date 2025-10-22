@@ -215,6 +215,7 @@ stage('HTML Report Debug') {
                 script {
                 bat '''
                     echo "=== Inside withDockerRegistry ==="
+                    docker context use default
                     docker context ls
                     docker context show
                 '''
