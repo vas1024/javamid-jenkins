@@ -154,8 +154,8 @@ pipeline {
 //                            '''
                         
                               sh """
-                                  curl -s -X POST https://api.telegram.org/bot%TOKEN%/sendMessage \
-                                      --data-urlencode chat_id=%CHAT_ID% \
+                                  curl -s -X POST https://api.telegram.org/bot$TOKEN/sendMessage \
+                                      --data-urlencode chat_id=$CHAT_ID \
                                       --data-urlencode text="Build: ${env.JOB_NAME}/${env.BRANCH_NAME}#${env.BUILD_NUMBER}    Status: ${currentBuild.currentResult}" \
                                       --data-urlencode parse_mode=HTML
                               """                        
