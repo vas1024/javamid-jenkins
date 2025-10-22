@@ -32,6 +32,22 @@ pipeline {
 
         }
 
+
+stage('Debug Docker') {
+    steps {
+        bat '''
+            echo "=== Docker Contexts ==="
+            docker context ls
+            
+            echo "=== Current Context ==="
+            docker context show
+            
+            echo "=== Docker Info ==="
+            docker info
+        '''
+    }
+}
+
         stage('Get source') {
             steps {
                 checkout scm
@@ -190,7 +206,18 @@ stage('HTML Report Debug') {
 
         stage('push image') {
             steps {
+        bat '''
+            echo "=== Before withDockerRegistry ==="
+            docker context ls
+            echo "---"
+            docker context show
+        '''
                 script {
+                bat '''
+                    echo "=== Inside withDockerRegistry ==="
+                    docker context ls
+                    docker context show
+                '''
                     docker.withRegistry('https://ghcr.io', DOCKER_CREDS) {
                         dockerImage.push()
                     }
