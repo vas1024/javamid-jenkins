@@ -204,26 +204,37 @@ stage('HTML Report Debug') {
             }
         }
 
-        stage('push image') {
-            steps {
-        bat '''
-            echo "=== Before withDockerRegistry ==="
-            docker context ls
-            echo "---"
-            docker context show
-        '''
-                script {
-                bat '''
-                    echo "=== Inside withDockerRegistry ==="
-                    docker context ls
-                    docker context show
-                '''
-                    docker.withRegistry('https://ghcr.io', 'ghcr') {
-                        dockerImage.push()
-                    }
-                }
-            }
+//        stage('push image') {
+//            steps {
+//                script {
+//                    docker.withRegistry('https://ghcr.io', 'ghcr') {
+//                        dockerImage.push()
+//                    }
+//                }
+//            }
+//        }
+
+
+
+
+stage('GHCR Push') {
+    steps {
+        withCredentials([string(credentialsId: 'ghcr', variable: 'GHCR_TOKEN')]) {
+            bat """
+                # Простой логин и пуш
+                echo %GHCR_TOKEN% | docker login ghcr.io -u vas1024 --password-stdin && (
+                    docker push ghcr.io/vas1024/jenkins:${env.BUILD_NUMBER}
+                    docker push ghcr.io/vas1024/jenkins:latest
+                    docker logout ghcr.io
+                    echo SUCCESS
+                ) || (
+                    echo FAILED to login
+                    exit 1
+                )
+            """
         }
+    }
+}
     
 
 
