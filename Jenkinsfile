@@ -215,11 +215,10 @@ stage('HTML Report Debug') {
                 script {
                 bat '''
                     echo "=== Inside withDockerRegistry ==="
-                    docker context use default
                     docker context ls
                     docker context show
                 '''
-                    docker.withRegistry('https://ghcr.io', DOCKER_CREDS) {
+                    docker.withRegistry('https://ghcr.io', 'ghcr') {
                         dockerImage.push()
                     }
                 }
